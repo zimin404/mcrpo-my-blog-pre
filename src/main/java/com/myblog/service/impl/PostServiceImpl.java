@@ -77,12 +77,20 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void deletePost(Long id) {
+<<<<<<< HEAD
         log.debug("Service delete post {}", id);
 
         // Удаляем комментарии, теги и сам пост
         postDao.deleteComments(id);
         postDao.deleteTags(id);
         postDao.deletePost(id);
+=======
+        // TODO: Реализовать удаление поста
+        // 1. Вызвать postDao.delete(id)
+        // ВАЖНО: Метод уже помечен @Transactional - это обеспечит атомарность каскадного удаления
+        // Подсказка: посмотрите на метод createPost как пример
+        throw new UnsupportedOperationException("TODO: Implement deletePost");
+>>>>>>> 21b0cb9... Заливка проекта в репозиторий
     }
 
     @Override
@@ -98,6 +106,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public int decrementLikes(Long id) {
+<<<<<<< HEAD
         log.debug("Service decrement likes for post {}", id);
 
         // 1. Уменьшаем лайки через DAO
@@ -112,6 +121,15 @@ public class PostServiceImpl implements PostService {
     }
 
 
+=======
+        // TODO: Реализовать уменьшение лайков
+        // 1. Вызвать postDao.decrementLikes(id)
+        // 2. Получить обновлённый пост через postDao.findById(id)
+        // 3. Вернуть новое значение likesCount
+        throw new UnsupportedOperationException("TODO: Implement decrementLikes");
+    }
+
+>>>>>>> 21b0cb9... Заливка проекта в репозиторий
     @Override
     @Transactional
     public void saveImage(Long postId, byte[] imageData, String contentType) {
