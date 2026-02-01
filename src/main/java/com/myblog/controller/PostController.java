@@ -76,20 +76,22 @@ public class PostController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        // TODO: Реализовать удаление поста
-        // 1. Вызвать postService.deletePost(id)
-        // 2. Вернуть ResponseEntity.ok().build()
-        // Подсказка: посмотрите на метод createPost как пример
-        throw new UnsupportedOperationException("TODO: Implement deletePost");
+    @DeleteMapping("/{id}/likes")
+    public ResponseEntity<Void> deleteLike(@PathVariable Long id) {
+    log.debug("Delete like from post {}", id);
+
+    postService.deleteLike(id);
+
+    return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/likes")
-    public ResponseEntity<Integer> incrementLikes(@PathVariable Long id) {
-        log.debug("POST /api/posts/{}/likes", id);
-        int likesCount = postService.incrementLikes(id);
-        return ResponseEntity.ok(likesCount);
+    public ResponseEntity<Void> addLike(@PathVariable Long id) {
+        log.debug("Add like to post {}", id);
+
+        postService.addLike(id);
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/likes")

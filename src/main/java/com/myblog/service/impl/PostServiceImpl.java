@@ -77,11 +77,12 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void deletePost(Long id) {
-        // TODO: Реализовать удаление поста
-        // 1. Вызвать postDao.delete(id)
-        // ВАЖНО: Метод уже помечен @Transactional - это обеспечит атомарность каскадного удаления
-        // Подсказка: посмотрите на метод createPost как пример
-        throw new UnsupportedOperationException("TODO: Implement deletePost");
+        log.debug("Service delete post {}", id);
+
+        // Удаляем комментарии, теги и сам пост
+        postDao.deleteComments(id);
+        postDao.deleteTags(id);
+        postDao.deletePost(id);
     }
 
     @Override
@@ -97,12 +98,19 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public int decrementLikes(Long id) {
-        // TODO: Реализовать уменьшение лайков
-        // 1. Вызвать postDao.decrementLikes(id)
-        // 2. Получить обновлённый пост через postDao.findById(id)
-        // 3. Вернуть новое значение likesCount
-        throw new UnsupportedOperationException("TODO: Implement decrementLikes");
+        log.debug("Service decrement likes for post {}", id);
+
+        // 1. Уменьшаем лайки через DAO
+        postDao.decrementLikes(id);
+
+        // 2. Получаем обновлённый пост
+        Post post = postDao.findById(id)
+                .orElseThrow(() -> new NotFoundException("Post not found"));
+
+        // 3. Возвращаем текущее количество лайков
+        return post.getLikesCount();
     }
+
 
     @Override
     @Transactional
