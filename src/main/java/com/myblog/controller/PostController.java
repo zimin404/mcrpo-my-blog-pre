@@ -1,159 +1,92 @@
 package com.myblog.controller;
 
-import com.myblog.dto.CreatePostRequest;
-import com.myblog.dto.PostListResponse;
-import com.myblog.dto.UpdatePostRequest;
-import com.myblog.model.Post;
-import com.myblog.service.PostService;
+import com.myblog.dto.CreateCommentRequest;
+import com.myblog.dto.UpdateCommentRequest;
+import com.myblog.model.Comment;
+import com.myblog.service.CommentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/posts")
-public class PostController {
+@RequestMapping("/posts/{postId}/comments")
+public class CommentController {
 
-    private static final Logger log = LoggerFactory.getLogger(PostController.class);
-    private final PostService postService;
+    private static final Logger log = LoggerFactory.getLogger(CommentController.class);
+    private final CommentService commentService;
 
-    public PostController(PostService postService) {
-        this.postService = postService;
+    public CommentController(CommentService commentService) {
+        this.commentService = commentService;
     }
 
+    // Получить все комментарии поста
     @GetMapping
-    public ResponseEntity<PostListResponse> getPosts(
-            @RequestParam(required = true) String search,
-            @RequestParam(required = true) int pageNumber,
-            @RequestParam(required = true) int pageSize) {
-        
-        log.debug("GET /api/posts - search: {}, pageNumber: {}, pageSize: {}", search, pageNumber, pageSize);
-        PostListResponse response = postService.getPosts(search, pageNumber, pageSize);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<Comment>> getComments(@PathVariable Long postId) {
+        log.debug("GET /posts/{}/comments", postId);
+        List<Comment> comments = commentService.getCommentsByPostId(postId);
+        return ResponseEntity.ok(comments);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Post> getPost(@PathVariable Long id) {
-        log.debug("GET /api/posts/{}", id);
-        Optional<Post> post = postService.getPostById(id);
-        return post.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+    // Получить один комментарий
+    @GetMapping("/{commentId}")
+    public ResponseEntity<Comment> getComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId) {
+
+        log.debug("GET /posts/{}/comments/{}", postId, commentId);
+        Optional<Comment> comment = commentService.getCommentById(commentId);
+        return comment.map(ResponseEntity::ok)
+                      .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/{id}")
-    public ResponseEntity<Post> getPostViaPost(@PathVariable Long id) {
-        log.debug("POST /api/posts/{}", id);
-        Optional<Post> post = postService.getPostById(id);
-        return post.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
-    }
-
+    // Создать комментарий
     @PostMapping
-    public ResponseEntity<Post> createPost(@RequestBody CreatePostRequest request) {
-        log.debug("POST /api/posts - title: {}", request.getTitle());
-        Post createdPost = postService.createPost(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
+    public ResponseEntity<Comment> createComment(
+            @PathVariable Long postId,
+            @RequestBody CreateCommentRequest request) {
+
+        log.debug("POST /posts/{}/comments - text: {}", postId, request.getText());
+        Comment createdComment = commentService.createComment(postId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(
-            @PathVariable Long id,
-            @RequestBody UpdatePostRequest request) {
-        
-        log.debug("PUT /api/posts/{} - title: {}", id, request.getTitle());
-        
+    // Обновить комментарий
+    @PutMapping("/{commentId}")
+    public ResponseEntity<Comment> updateComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @RequestBody UpdateCommentRequest request) {
+
+        log.debug("Update comment {} for post {}", commentId, postId);
+
         try {
-            Post updatedPost = postService.updatePost(id, request);
-            return ResponseEntity.ok(updatedPost);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            Comment updatedComment = commentService.updateComment(postId, commentId, request);
+            return ResponseEntity.ok(updatedComment);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Comment {} not found for update", commentId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
-<<<<<<< HEAD
-    @DeleteMapping("/{id}/likes")
-    public ResponseEntity<Void> deleteLike(@PathVariable Long id) {
-    log.debug("Delete like from post {}", id);
+    // Удалить комментарий
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId) {
 
-    postService.deleteLike(id);
+        log.debug("Delete comment {} for post {}", commentId, postId);
 
-    return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/{id}/likes")
-    public ResponseEntity<Void> addLike(@PathVariable Long id) {
-        log.debug("Add like to post {}", id);
-
-        postService.addLike(id);
-
-        return ResponseEntity.ok().build();
-=======
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        // TODO: Реализовать удаление поста
-        // 1. Вызвать postService.deletePost(id)
-        // 2. Вернуть ResponseEntity.ok().build()
-        // Подсказка: посмотрите на метод createPost как пример
-        throw new UnsupportedOperationException("TODO: Implement deletePost");
-    }
-
-    @PostMapping("/{id}/likes")
-    public ResponseEntity<Integer> incrementLikes(@PathVariable Long id) {
-        log.debug("POST /api/posts/{}/likes", id);
-        int likesCount = postService.incrementLikes(id);
-        return ResponseEntity.ok(likesCount);
->>>>>>> 21b0cb9... Заливка проекта в репозиторий
-    }
-
-    @DeleteMapping("/{id}/likes")
-    public ResponseEntity<Integer> removeLike(@PathVariable Long id) {
-        // TODO: Реализовать удаление лайка
-        // 1. Вызвать postService.decrementLikes(id)
-        // 2. Вернуть ResponseEntity.ok() с новым количеством лайков
-        throw new UnsupportedOperationException("TODO: Implement removeLike");
-    }
-
-    @PutMapping("/{id}/image")
-    public ResponseEntity<Void> uploadImage(
-            @PathVariable Long id,
-            @RequestParam("image") MultipartFile image) {
-        
-        log.debug("PUT /api/posts/{}/image - filename: {}", id, image.getOriginalFilename());
-        
         try {
-            byte[] imageData = image.getBytes();
-            String contentType = image.getContentType();
-            postService.saveImage(id, imageData, contentType);
+            commentService.deleteComment(postId, commentId);
             return ResponseEntity.ok().build();
-        } catch (IOException e) {
-            log.error("Error saving image for post {}", id, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (IllegalArgumentException ex) {
+            log.warn("Comment {} not found for deletion", commentId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-    }
-
-    @GetMapping("/{id}/image")
-    public ResponseEntity<byte[]> getImage(@PathVariable Long id) {
-        log.debug("GET /api/posts/{}/image", id);
-        
-        Optional<byte[]> imageData = postService.getImage(id);
-        if (imageData.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        Optional<String> contentType = postService.getImageContentType(id);
-        MediaType mediaType = contentType
-            .map(MediaType::parseMediaType)
-            .orElse(MediaType.IMAGE_JPEG);
-        
-        return ResponseEntity.ok()
-            .contentType(mediaType)
-            .body(imageData.get());
     }
 }
-
